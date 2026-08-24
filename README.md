@@ -20,7 +20,7 @@ no manual import step.
 
 ```bash
 git clone git@github.com:EliasDevv/stipendium-solution.git
-cd stipendium-solution
+cd best-combination-solution
 docker compose up
 ```
 
