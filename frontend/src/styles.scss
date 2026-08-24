@@ -1,0 +1,1259 @@
+/* Design direction 2a — tool-like: white space, 1px hairlines, one accent colour.
+   Type: Source Sans 3. Accent: deep blue #2151C2, used for interactive
+   affordances and the primary result only — everything else is ink and rules. */
+
+// The single breakpoint, in SCSS because custom properties don't work in @media.
+$bp-narrow: 900px;
+
+:root {
+  --font-sans:
+    'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --accent: #2151c2;
+  --accent-hover: #1a419c;
+  --accent-tint: #f2f5fd;
+
+  --text: #1a1a1a;
+  --muted: #555555;
+  --faint: #8a8a8a;
+
+  --line: #e4e4e4;
+  --line-strong: #d6d6d6;
+  --surface: #ffffff;
+  --subtle: #f7f7f7;
+
+  /* Coverage semantics in the matrix: green = complete, amber = partial.
+     Both glyph colours clear 4.5:1 on their own tint. */
+  --ok: #197a37;
+  --ok-tint: #e9f5ec;
+  --warn: #b45309;
+  --warn-tint: #fdf1e0;
+  --danger: #a8261f;
+
+  --radius: 6px;
+  --radius-sm: 5px;
+
+  /* Layout: two width tiers. Prose keeps a readable measure, data components
+     (matrix, ledger, tables) get the full page width. */
+  --w-page: 1520px;
+  --w-text: 68ch;
+  --gutter: clamp(1rem, 2.5vw, 2.25rem);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 14px;
+  --space-4: 20px;
+  --space-5: 36px;
+
+  /* inline <select> chevron, matching the design's 9px caret */
+  --caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 3.5L5 6.5L8 3.5' stroke='%23555555' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- app shell ---- */
+
+main.app {
+  max-width: var(--w-page);
+  margin: 0 auto;
+  padding: var(--space-5) var(--gutter) 56px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* ---- buttons ---- */
+
+button.primary {
+  padding: 9px 18px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+button.primary:hover {
+  background: var(--accent-hover);
+}
+
+/* ---- page header ---- */
+
+.page-head {
+  max-width: var(--w-text);
+}
+
+.page-head .tagline {
+  margin: var(--space-1) 0 0;
+  color: var(--muted);
+}
+
+/* ---- centred head ----
+   Title, tagline, search field and chips are centred as a column; everything
+   below (controls band, ledger, matrix, tables) keeps the page's left edge. */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding-block: var(--space-4) var(--space-5);
+  text-align: center;
+}
+
+/* Field in the middle column, "Compare all games" beside it, chips in a second
+   row under the field. The two outer columns are equal, so the field keeps the
+   page's centre line whether or not the button is rendered — centring field and
+   button as a pair would shift the field sideways the moment the button
+   disappears in all-games mode. */
+.hero .search-row {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 760px) 1fr;
+  align-items: center;
+  width: 100%;
+  gap: var(--space-3);
+}
+
+.hero .search-row app-team-search {
+  grid-column: 2;
+}
+
+/* Secondary to the field: a smaller outlined pill that fills in on hover. */
+.hero .search-row .primary {
+  grid-column: 3;
+  justify-self: start;
+  height: 40px;
+  padding-block: 0;
+  padding-inline: 18px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.hero .search-row .primary:hover {
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+  color: #fff;
+}
+
+/* Roomier field: ~54px tall (40px button + 2×6px padding + 2×1px border). */
+.hero .team-search .field {
+  padding: 6px 6px 6px 24px;
+}
+
+.hero .team-search input {
+  font-size: 16px;
+}
+
+.hero .team-search .search-button {
+  width: 40px;
+  height: 40px;
+}
+
+/* Second grid row, under the field: flush with the field's left edge. */
+.hero .selected-teams {
+  grid-column: 2;
+  justify-content: flex-start;
+}
+
+/* No chips, no gap — the flex gap would show even for an empty row. */
+.hero .selected-teams:empty {
+  display: none;
+}
+
+/* With results on screen, tighten the head so the ledger starts without scrolling. */
+.hero.compact {
+  gap: var(--space-3);
+  padding-block: var(--space-2) var(--space-3);
+}
+
+/* ---- team search + chips ---- */
+
+/* The component host is inline by default, which would collapse the field to
+   its content width inside the head's grid column. */
+app-team-search {
+  display: block;
+  min-width: 0;
+}
+
+.team-search {
+  position: relative;
+}
+
+/* Pill field with a round accent button on the trailing edge. */
+.team-search .field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 5px 5px 5px 20px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+.team-search .field:focus-within {
+  border-color: var(--accent);
+}
+
+.team-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.team-search .search-button {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+}
+
+.team-search .search-button:hover {
+  background: var(--accent-hover);
+}
+
+.team-search input:focus {
+  outline: none;
+}
+
+.team-search input::placeholder {
+  color: var(--faint);
+}
+
+.suggestions {
+  position: absolute;
+  text-align: left;
+  z-index: 20;
+  inset-inline: 0;
+  top: calc(100% + 4px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.08);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.suggestions button {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text);
+  text-align: left;
+}
+
+.suggestions button strong {
+  font-weight: 600;
+}
+
+.suggestions button:hover,
+.suggestions button:focus {
+  background: var(--subtle);
+  outline: none;
+}
+
+.suggestions .empty {
+  padding: 9px 12px;
+  color: var(--faint);
+  font-size: 14px;
+  cursor: default;
+  user-select: none;
+}
+
+.selected-teams {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 5px 9px 5px 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--subtle);
+  font-size: 13.5px;
+}
+
+.chip.chip-all {
+  border-color: var(--accent);
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+
+.chip button {
+  display: grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--faint);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.chip button:hover {
+  color: var(--text);
+}
+
+/* ---- controls band ---- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  margin: var(--space-4) 0 var(--space-5);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.segmented {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+
+.segmented button {
+  padding: 6px 12px;
+  border: 0;
+  border-left: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.segmented button:first-child {
+  border-left: 0;
+}
+
+.segmented button:hover {
+  background: var(--subtle);
+}
+
+.segmented button[aria-pressed='true'] {
+  background: var(--text);
+  color: #fff;
+  font-weight: 600;
+}
+
+.field-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.field-inline select {
+  /* keeps the caret next to the selected label instead of the widest option */
+  field-sizing: content;
+  padding: 2px 15px 2px 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent var(--caret) no-repeat right center / 9px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  appearance: none;
+  cursor: pointer;
+}
+
+.date-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+app-date-field {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.date-text {
+  width: 7.5rem;
+  padding: 4px 26px 4px 7px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* The calendar affordance: a glyph with the native date input laid over it,
+   transparent. The input keeps the platform picker (and the keyboard path to
+   it) without ever showing its own browser-locale format. */
+.date-pick {
+  position: absolute;
+  right: 3px; /* 3 + the padding below = the 7px the glyph sits at */
+  display: inline-flex;
+  padding: 4px;
+  color: var(--faint);
+  cursor: pointer;
+}
+
+/* The input is the picker's anchor and the keyboard path to it, never a click
+   target: a click landing on its own calendar indicator opens the picker, and
+   the `showPicker()` the glyph then asks for closes it right back. */
+.date-pick input {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.date-range .dash {
+  color: var(--faint);
+}
+
+/* ---- competitions dropdown ----
+   Trigger with a count pill; panel is search, country-grouped checkbox rows
+   and a footer that commits. Sized to the controls band, not to the mock's
+   standalone card, so it sits level with the segmented control beside it. */
+
+app-competitions-dropdown {
+  position: relative;
+  margin-left: auto;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.trigger:hover {
+  border-color: var(--faint);
+}
+
+.trigger.open {
+  border-color: var(--accent);
+}
+
+.trigger .count {
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--accent-tint);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.trigger .chevron {
+  color: var(--muted);
+  transition: transform 0.15s;
+}
+
+.trigger.open .chevron {
+  transform: rotate(180deg);
+}
+
+.panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 340px;
+  max-width: calc(100vw - 2 * var(--gutter));
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow:
+    0 12px 32px -8px rgb(0 0 0 / 0.18),
+    0 2px 6px rgb(0 0 0 / 0.06);
+  text-align: left;
+}
+
+.panel-search {
+  padding: 8px 8px 6px;
+}
+
+.panel .search-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 9px;
+  border-radius: var(--radius-sm);
+  background: var(--subtle);
+  color: var(--faint);
+}
+
+.panel .search-field input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.panel .search-field input:focus {
+  outline: none;
+}
+
+.panel .search-field:focus-within {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.panel-list {
+  max-height: 296px;
+  overflow-y: auto;
+  padding: 0 6px 6px;
+}
+
+.panel .group-head {
+  margin: 0;
+  padding: 9px 10px 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.panel .option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.panel .option:hover {
+  background: var(--subtle);
+}
+
+/* Real checkbox, drawn as the design's 16px rounded box — the semantics and
+   keyboard behaviour come for free, only the paint is ours. */
+.panel .option input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--surface) no-repeat center / 11px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.panel .option input:checked {
+  border-color: var(--accent);
+  background-color: var(--accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2L4.8 8.5L9.5 3.8' fill='none' stroke='%23fff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.panel .option-season {
+  margin-left: auto;
+  padding-left: var(--space-2);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
+}
+
+.panel .option-empty {
+  margin: 0;
+  padding: 10px;
+  font-size: 13.5px;
+  color: var(--faint);
+}
+
+.panel-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-top: 1px solid var(--line);
+  background: var(--subtle);
+}
+
+.panel-foot .clear {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.panel-foot .clear:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.panel-foot .clear:disabled {
+  color: var(--faint);
+  cursor: default;
+}
+
+.panel-foot .apply {
+  padding: 6px 14px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.panel-foot .apply:hover {
+  background: var(--accent-hover);
+}
+
+/* Narrow windows: the band wraps onto two or three rows, so tighten the gaps
+   and stop "Competitions" from being stranded alone on its own row. */
+@media (max-width: $bp-narrow) {
+  /* Not enough room for field and button side by side: stack them, the button
+     centred as it was when the flex row still wrapped. */
+  .hero .search-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero .search-row app-team-search,
+  .hero .search-row .primary,
+  .hero .selected-teams {
+    grid-column: 1;
+  }
+
+  .hero .search-row .primary {
+    justify-self: center;
+  }
+
+  .controls {
+    gap: var(--space-3) var(--space-4);
+  }
+
+  app-competitions-dropdown {
+    margin-left: 0;
+  }
+
+  /* Anchored left once the trigger is no longer on the band's right edge. */
+  .panel {
+    right: auto;
+    left: 0;
+  }
+}
+
+/* ---- status ---- */
+
+.status {
+  max-width: var(--w-text);
+  color: var(--muted);
+}
+
+.status.error {
+  color: var(--danger);
+}
+
+/* ---- best combination ledger ---- */
+
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.summary-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.summary-head h2 {
+  color: var(--accent);
+}
+
+.summary-head .coverage {
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+.summary-head .coverage strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ledger {
+  display: flex;
+  flex-direction: column;
+}
+
+.ledger-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.ledger-row .name {
+  min-width: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.ledger-row .meta {
+  font-size: 13px;
+  color: var(--faint);
+}
+
+.ledger-row .amount {
+  margin-left: auto;
+  font-size: 14.5px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ledger-row.total {
+  padding: 12px 0;
+  border-top: 1px solid var(--text);
+}
+
+.ledger-row.total .amount {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+/* Price caveat for the total — hugs the amount edge right under it, with a
+   clear gap before the left-aligned coverage notes that may follow. */
+.ledger-footnote {
+  max-width: var(--w-text);
+  /* Negative top margin eats most of the total row's 12px bottom padding, so
+     the caveat reads as part of the total instead of a note of its own. */
+  margin: -6px 0 var(--space-3) auto;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--muted);
+  text-align: right;
+}
+
+.summary-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: var(--w-text);
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.summary-note svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+/* ---- matrix ---- */
+
+app-comparison-matrix {
+  display: block;
+  position: relative;
+}
+
+.matrix-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  /* Own lane for the horizontal scrollbar: browsers that overlay it would
+     otherwise draw it on top of the last row and clip its hover outline. */
+  padding-bottom: 10px;
+  margin-bottom: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.matrix-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.matrix-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.matrix-scroll::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--line-strong);
+  background-clip: content-box;
+}
+
+.matrix-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--faint);
+  background-clip: content-box;
+}
+
+.matrix {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: max-content;
+  min-width: 100%;
+  font-size: 13.5px;
+}
+
+.matrix th,
+.matrix td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.matrix thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+}
+
+.matrix tbody th,
+.matrix thead th.corner {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+  text-align: left;
+  border-right: 1px solid var(--line);
+  max-width: 320px;
+}
+
+.matrix thead th.corner {
+  z-index: 3;
+}
+
+.corner-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.pkg-head {
+  min-width: 7.5rem;
+  text-align: center;
+  vertical-align: bottom;
+}
+
+.pkg-head.best {
+  background: var(--accent-tint);
+  box-shadow: inset 0 2px 0 var(--accent);
+}
+
+.badge {
+  display: inline-block;
+  margin-bottom: var(--space-1);
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.pkg-name {
+  display: block;
+  max-width: 12rem;
+  margin-inline: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.pkg-price {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
+}
+
+.sub-head th {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--faint);
+}
+
+.sub-head th.best {
+  background: var(--accent-tint);
+}
+
+.pair-end {
+  border-right: 1px solid var(--line);
+}
+
+.group-row th {
+  background: var(--subtle);
+}
+
+.group-row td {
+  background: var(--subtle);
+}
+
+.group-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+}
+
+.chevron {
+  display: inline-block;
+  transition: transform 0.15s;
+  color: var(--faint);
+}
+
+.chevron.open {
+  transform: rotate(90deg);
+}
+
+.group-toggle .count {
+  font-size: 12.5px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
+}
+
+td.rollup,
+td.cell {
+  text-align: center;
+  color: var(--faint);
+}
+
+td.rollup.full {
+  background: var(--ok-tint);
+  color: var(--ok);
+  font-weight: 700;
+}
+
+td.rollup.partial {
+  background: var(--warn-tint);
+  color: var(--warn);
+  font-weight: 700;
+}
+
+td.cell.on {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+td[data-col]:hover {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* Hover label — absolute inside app-comparison-matrix, so it escapes the
+   horizontal scroller's clipping but still follows the page. */
+.matrix-tip {
+  position: absolute;
+  z-index: 30;
+  padding: 2px 6px;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  white-space: nowrap;
+  background: var(--text);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.matrix-tip.below {
+  transform: translate(-50%, 0);
+}
+
+.game-row th {
+  font-weight: 400;
+}
+
+.pairing {
+  display: block;
+}
+
+.kickoff {
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--faint);
+}
+
+/* ---- pareto ---- */
+
+.pareto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pareto h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.pareto table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.pareto th,
+.pareto td {
+  padding: 9px 0;
+  text-align: left;
+  border-top: 1px solid var(--line);
+}
+
+.pareto thead th {
+  border-top: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--faint);
+}
+
+.pareto tbody tr:last-child td {
+  border-bottom: 1px solid var(--line);
+}
+
+.pareto td:nth-child(1),
+.pareto td:nth-child(2) {
+  width: 110px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.pareto tr.current td {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---- recent searches ---- */
+
+.recent-searches {
+  margin-top: var(--space-5);
+}
+
+.recent-searches .head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.recent-searches h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Destructive but bulk, so it stays a quiet text button until hovered. */
+.recent-searches .clear {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 13px;
+  color: var(--muted);
+  transition: color 0.12s ease;
+}
+
+.recent-searches .clear:hover {
+  color: var(--danger);
+  text-decoration: underline;
+}
+
+.recent-searches ul {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Negative margin so the rows keep their text aligned with the heading while
+   the hover highlight still reaches past it. */
+.recent-searches li {
+  display: grid;
+  grid-template-columns: 14px 1fr 130px 110px 26px;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 -10px;
+  padding: 9px 10px;
+  border-top: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition: background 0.12s ease;
+}
+
+.recent-searches li:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.recent-searches li:hover {
+  background: var(--subtle);
+}
+
+.recent-searches .clock {
+  color: var(--faint);
+}
+
+.recent-searches a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.recent-searches a:hover {
+  text-decoration: underline;
+}
+
+.recent-searches .figures {
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.recent-searches .figures.price {
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* Hidden until the row is hovered or the button is keyboard-focused, so the
+   list reads as plain links until you go looking for the delete. */
+.recent-searches .remove {
+  justify-self: end;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--muted);
+  opacity: 0;
+  cursor: pointer;
+  transition:
+    opacity 0.12s ease,
+    color 0.12s ease;
+}
+
+.recent-searches li:hover .remove,
+.recent-searches .remove:focus-visible {
+  opacity: 1;
+}
+
+.recent-searches .remove:hover {
+  color: var(--danger);
+}

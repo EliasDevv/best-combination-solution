@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Django
+backend/db.sqlite3
+backend/staticfiles/
+*.log
+
+# Environment
+.env
+.env.local
+
+# Data (CSVs are provided by the challenge, not committed)
+data/*.csv
+
+# Node / Angular
+node_modules/
+frontend/dist/
+frontend/.angular/
+npm-debug.log*
+yarn-error.log*
+
+# IDE / local tooling
+.idea/
+.vscode/
+*.swp
+.DS_Store
+.claude/
+CLAUDE.md

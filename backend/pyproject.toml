@@ -1,0 +1,71 @@
+[project]
+name = "best-combination-backend"
+version = "0.1.0"
+description = "Backend for the Best Combination streaming package comparison."
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.0,<6.0",
+    "djangorestframework>=3.15",
+    "django-cors-headers>=4.4",
+    "psycopg[binary]>=3.2",
+    "redis>=5.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-django>=4.9",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    # Only for `manage.py verify_independent` (independent ILP cross-check).
+    "pandas>=2.2",
+    "pulp>=2.8",
+]
+
+# This is a Django project, not a distributable library: installing it only
+# needs the dependencies on the path, never a built package. An explicit
+# empty package list keeps setuptools' flat-layout auto-discovery from
+# refusing the editable install ("multiple top-level packages discovered").
+[tool.setuptools]
+packages = []
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["catalog/migrations", ".venv"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "C4",  # flake8-comprehensions
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Settings modules use star imports by convention.
+"config/settings/*.py" = ["F401", "F403", "F405"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.dev"
+python_files = ["test_*.py"]
+testpaths = ["tests"]
+filterwarnings = ["error::RuntimeWarning"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Django's metaclass magic (models, management commands) is not fully typed
+# without django-stubs; keep the strict rules for the pure-Python solver.
+module = ["catalog.*", "api.*", "config.*"]
+disallow_untyped_defs = false
