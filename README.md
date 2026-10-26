@@ -19,7 +19,7 @@ Docker is the only prerequisite. No Python, no Node, no environment variables,
 no manual import step.
 
 ```bash
-git clone git@github.com:EliasDevv/stipendium-solution.git
+git clone https://github.com/EliasDevv/best-combination-solution.git
 cd best-combination-solution
 docker compose up
 ```
@@ -56,7 +56,7 @@ without any data on hand. To use the real CSVs instead, copy them into `data/`
 **before the first** `docker compose up`:
 
 ```bash
-cp ../best-combination-coding-challenge-dataset/*.csv data/
+cp /path/to/your/csvs/*.csv data/
 docker compose up
 ```
 
@@ -72,11 +72,9 @@ back to the synthetic dataset when the directory is empty. If the stack has
 already seeded itself, wipe it first with `docker compose down -v`, because
 seeding only happens against an empty catalog.
 
-The files come from the private challenge repo
-[`TechUp-Stipendium/best-combination-coding-challenge-dataset`](https://github.com/TechUp-Stipendium/best-combination-coding-challenge-dataset)
-and are deliberately not committed here, so `data/` is gitignored. Only the
-benchmark numbers further below are specific to the real dataset (8,871 games,
-36 packages).
+The challenge CSVs are not part of this repository and are deliberately not
+committed, so `data/` is gitignored. Only the benchmark numbers further below
+are specific to the real dataset (8,871 games, 36 packages).
 
 ### Running it natively (for development)
 
@@ -414,3 +412,7 @@ restore the budget at the cost of a second response shape.
   development path, with autoreload, HMR, and a `pytest` run that needs no
   containers at all. Neither is a wrapper around the other. The container just
   runs the same management commands a developer would type.
+
+## License
+
+[MIT](LICENSE)
